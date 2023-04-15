@@ -9,7 +9,8 @@ let poseNet,
     myJSON = {};
 
 function setup(){
-  createCanvas(1280, 720);
+  // size of the elecrow 7" displays/ size of the stills
+  createCanvas(1028, 600);
   // alternate between the 2 states: detecting poses and changing image
   processSwitch = false;
   // starts on the first image
@@ -20,18 +21,30 @@ function setup(){
 
   loadedImage = getImage(currentImage);
 
-  // load up the machine learning poseNet and the brain
+  // load up the machine learning model PoseNet, and the 'brain'
   poseNet = ml5.poseNet('single', modelReady);
   brainSetup();
+}
+
+function brainSetup(){
+  // start our neural network, so we can start training
+  // inputs/outputs to be the images in and out
+  let options = {
+    inputs: 34,
+    outputs: totalImages,
+    task: "classification",
+    debug: true,
+  };
+  brain = ml5.neuralNetwork(options);
 }
 
 function draw(){
   if(pose){
     // draw the current image
-    image(loadedImage, 0, 0, 1280, 720);
+    image(loadedImage, 0, 0, 1024, 600);
     
     // draw its keypoints
-    for (let keypoint of pose.keypoints) {
+    for (let keypoint of pose.keypoints){
       let x = keypoint.position.x;
       let y = keypoint.position.y;
       fill(200, 0, 120);
@@ -55,8 +68,8 @@ function draw(){
   }
 }
 
-function getImage(currentImage) {
-  currentImageString = `scene2outfit1_${('0000'+currentImage).slice(-4)}`;
+function getImage(currentImage){
+  currentImageString = `scene1outfit1_${('0000'+currentImage).slice(-4)}`;
   // (adjusted to pad number with leading zeros)
   return createImg(`assets/scene2outfit1_output3/scene2outfit1_${('0000'+currentImage).slice(-4)}.jpg`);
 }
@@ -68,22 +81,10 @@ function modelReady(){
   poseNet.singlePose(loadedImage, gotPoses);
 }
 
-function brainSetup(){
-  // start our neural network, so we can start training
-  // inputs/outputs to be the images in and out
-  let options = {
-    inputs: 34,
-    outputs: totalImages,
-    task: "classification",
-    debug: true,
-  };
-  brain = ml5.neuralNetwork(options);
-}
-
 function gotPoses(poses){
 
   // console.log("poses.length:", poses.length)
-  if (poses.length > 0) {
+  if (poses.length > 0){
     pose = poses[0].pose;
 
     //inputs array for coords to go in
@@ -92,8 +93,7 @@ function gotPoses(poses){
 
     // myJSON['currentImageString'] = inputs;
 
-    for (let keypoint of pose.keypoints) {
-
+    for (let keypoint of pose.keypoints){
       let x = keypoint.position.x;
       let y = keypoint.position.y;
       inputs.push(x);
@@ -114,7 +114,6 @@ function gotPoses(poses){
     myJSON[currentImageString] = inputs;
     console.log(myJSON);
     // debugger;
-
   }
 }  
 
@@ -126,15 +125,15 @@ function nextImage(){
   // change loaded image to the next image
   loadedImage = getImage(currentImage);
   // give the img tag a width + height attribute, so DOM element knows the size each time
-  loadedImage.size(1280, 720);
+  loadedImage.size(1024, 600);
   loadedImage.hide(); 
 }
 
 // press s to save the json file
-function keyPressed() {
-  if (key == "s") {
+function keyPressed(){
+  if (key == "s"){
     // brain.saveData();
-    downloadObjectAsJson(myJSON, 'JsonAndDat')
+    downloadObjectAsJson(myJSON, 'JsonAndDat');
   } 
 }  
 
