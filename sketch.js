@@ -4,6 +4,7 @@ let poseNet,
     currentImage, 
     currentImageString, 
     loadedImage,
+    fileName,
     totalImages, 
     processSwitch,
     myJSON = {};
@@ -15,15 +16,16 @@ function setup(){
   processSwitch = false;
   // starts on the first image
   currentImage = 1;
-  console.log("current image:", currentImage);
+  fileName = 'scene2outfit2';
   // change depending on amount of images in folder
-  totalImages = 3762;
+  totalImages = 3488;
 
   loadedImage = getImage(currentImage);
 
   // load up the machine learning model PoseNet, and the 'brain'
   poseNet = ml5.poseNet('single', modelReady);
   brainSetup();
+  frameRate(5);
 }
 
 function brainSetup(){
@@ -47,18 +49,25 @@ function draw(){
     for (let keypoint of pose.keypoints){
       let x = keypoint.position.x;
       let y = keypoint.position.y;
-      fill(200, 0, 120);
-      stroke(255);
-      ellipse(x, y, 10, 10);
+      fill(120, 120, 120);
+      stroke(255, 180, 0);
+      beginShape();
+      vertex(x, y-5);
+      vertex(x+3, y);
+      vertex(x, y+5);
+      vertex(x-3, y);
+      endShape(CLOSE);
     }
 
     if(currentImage < totalImages){
       if(processSwitch == true){
         nextImage();
+        console.log('nextImage:', currentImage, ' / ', totalImages);
         processSwitch = false;
       }
       else{
         modelReady();
+        console.log('modelReady');
         processSwitch = true;
       }
     } 
@@ -69,9 +78,9 @@ function draw(){
 }
 
 function getImage(currentImage){
-  currentImageString = `scene1outfit1_${('0000'+currentImage).slice(-4)}`;
+  currentImageString = `${fileName}_${('0000'+currentImage).slice(-4)}`;
   // (adjusted to pad number with leading zeros)
-  return createImg(`assets/scene2outfit1_output3/scene2outfit1_${('0000'+currentImage).slice(-4)}.jpg`);
+  return createImg(`assets/${fileName}/${fileName}-${('0000'+currentImage).slice(-4)}.jpg`);
 }
 
 function modelReady(){
@@ -129,11 +138,10 @@ function nextImage(){
   loadedImage.hide(); 
 }
 
-// press s to save the json file
+// press s to save the json file (saves as the name of the fileName)
 function keyPressed(){
   if (key == "s"){
-    // brain.saveData();
-    downloadObjectAsJson(myJSON, 'JsonAndDat');
+    downloadObjectAsJson(myJSON, `${fileName}`);
   } 
 }  
 
